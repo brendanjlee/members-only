@@ -5,7 +5,8 @@ const bcrypt = require("bcryptjs");
 const passport = require("passport");
 
 const sign_up_get = asyncHandler(async (req, res, next) => {
-  res.render("signup");
+  const err = req.query.error;
+  res.render("signup", { error: err });
 });
 
 const sign_up_post = [
@@ -29,28 +30,39 @@ const sign_up_post = [
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
 
-    const user = new User({
+    // check if user already exists
+    const isDup = await User.findOne({ username: req.body.username });
+
+    if (isDup != null) {
+      res.redirect(
+        `/sign-up?error=The username "${req.body.username}" already exists`
+      );
+      console.log(`username ${req.body.username} exists`);
+      return;
+    }
+
+    const errUser = new User({
       username: req.body.username,
-      password: req.body.password,
+      password: "dummy",
       isAdmin: req.body.is_admin ? true : false,
     });
 
     if (!errors.isEmpty()) {
       res.render("signup", {
-        user: user,
+        user: errUser,
         errors: errors.array(),
       });
       return;
     }
 
     bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
-      const newuser = new User({
+      const user = new User({
         username: req.body.username,
         password: hashedPassword,
         isAdmin: req.body.is_admin ? true : false,
       });
 
-      await newuser.save();
+      await user.save();
     });
 
     res.redirect("/login");
@@ -65,12 +77,15 @@ const log_in_post = [
   passport.authenticate("local", {
     successRedirect: "/",
     failureRedirect: "/login",
-    failureMessage: true,
+    failureMessage: "wrong password",
   }),
 ];
 
 const sign_out_get = asyncHandler(async (req, res, next) => {
-  res.send("sign out get");
+  req.logout((err) => {
+    if (err) return next(err);
+    res.redirect("/");
+  });
 });
 
 module.exports = {
