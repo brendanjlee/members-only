@@ -1,5 +1,27 @@
 extends layout
 
 block content
+  div(class='navBtns')
+    p
+      a(href='/sign-up') Sign Up
+    p 
+      a(href='/login') Login
+    p
+      a(href='/newMessage') New Post
   h1= title
-  p Welcome to #{title}
+
+// login
+extends layout
+
+block content
+  a(href='/') Home
+  h1 Login
+
+  form(method='POST' class='formGroup')
+    label(for='username') Username:
+    input#username.form-control(type='text' name='username' required)
+
+    label(for='password') Password:
+    input#password.form-control(type='password' name='password' required)
+
+    button(type='submit') Login

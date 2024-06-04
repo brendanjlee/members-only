@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  a(href='/') Home
+  h1 New Message
+
+  form(method='POST' class='formGroup')
+    label(for='title') Message Title:
+    input#title.form-control(type='text' name='title' required)
+
+    label(for="content") Message Content:
+    textarea(name='content' id='content' rows='10' cols='30' required)
+    br
+    button(type='submit') Submit
