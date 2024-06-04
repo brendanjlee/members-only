@@ -5,12 +5,14 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const RateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
+const session = require("express-session");
+const bcrypt = require("bcryptjs");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
 require("dotenv").config();
-
 // MongoDB Connection Setup //
 mongoose.set("strictQuery", false);
-const dev_db_url = process.env.MONGO_URL;
-const mongoDB = process.env.MONGODB_URL || dev_db_url;
+const mongoDB = process.env.MONGO_URL_DEV;
 
 main().catch((err) => console.log(err));
 async function main() {
@@ -23,7 +25,7 @@ const limiter = RateLimit({
   max: 20,
 });
 
-// Router Setup //
+// Router //
 var indexRouter = require("./routes/index");
 
 var app = express();
@@ -37,8 +39,53 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  session({
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+app.use(passport.session()); // authentication
 
 app.use("/", indexRouter);
+
+// Authentication Strat //
+// authentication strategy //
+const User = require("./models/user");
+
+passport.use(
+  new LocalStrategy(async (username, password, done) => {
+    try {
+      // check for username
+      const user = await User.findOne({ username: username });
+      if (!user) {
+        return done(null, false, { message: "no username found" });
+      }
+      // compare passwords
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return done(null, false, { message: "password does not match" });
+      }
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  })
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
