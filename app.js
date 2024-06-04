@@ -6,13 +6,15 @@ var logger = require("morgan");
 const RateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+
 require("dotenv").config();
 // MongoDB Connection Setup //
 mongoose.set("strictQuery", false);
-const mongoDB = process.env.MONGO_URL_DEV;
+const mongoDB = process.env.MONGO_URL;
 
 main().catch((err) => console.log(err));
 async function main() {
@@ -44,6 +46,12 @@ app.use(
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URL,
+    }),
+    cookie: {
+      maxAge: 1000 * 30,
+    },
   })
 );
 app.use(passport.session()); // authentication
