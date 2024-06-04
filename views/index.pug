@@ -2,10 +2,31 @@ extends layout
 
 block content
   div(class='navBtns')
-    p
-      a(href='/sign-up') Sign Up
-    p 
-      a(href='/login') Login
-    p
-      a(href='/newMessage') New Post
+    if user
+      p
+        a(href='/newMessage') New Post
+      p
+        a(href='/logout') Log Out
+      p Signed in as: #{user.username}
+    else
+      p
+        a(href='/sign-up') Sign Up
+      p 
+        a(href='/login') Login
+    
   h1= title
+  if messages
+    if user && messages.length
+      each msg in messages
+        div
+          h3 #{msg.title}
+          p #{msg.content}
+          p #{msg.formattedDate}
+          p By #{msg.author.username}
+
+    else
+      each msg in messages
+        div
+          h3 #{msg.title}
+          p Log in to see what the message contains
+          p By anonymous

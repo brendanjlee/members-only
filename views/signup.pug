@@ -6,13 +6,15 @@ block content
 
   if errors
     ul 
-      for error in errors
-        li != #{err.msg}s
+      for err in errors
+        li != #{err.msg}
 
+  if error
+    p.error #{error}
 
   form(method='POST' class='formGroup')
     label(for='username') Username:
-    input#username.form-control(type='text' name='username' required)
+    input#username.form-control(type='text' name='username' required value=(undefined === user ? '' : user.username))
 
     label(for='password') Password:
     input#password.form-control(type='password' name='password' required)

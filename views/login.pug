@@ -4,6 +4,9 @@ block content
   a(href='/') Home
   h1 Login
 
+  if message
+    p #{message}
+
   form(method='POST' class='formGroup')
     label(for='username') Username:
     input#username.form-control(type='text' name='username' required)

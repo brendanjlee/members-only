@@ -2,7 +2,12 @@ extends layout
 
 block content
   a(href='/') Home
-  h1 New Message
+  h1 Post a New Message
+
+  if errors
+    ul 
+      for err in errors
+        li != #{err.msg}
 
   form(method='POST' class='formGroup')
     label(for='title') Message Title:
